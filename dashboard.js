@@ -15,7 +15,7 @@ const auth = firebase.auth();
 const userEmailText = document.getElementById('user-email');
 const logoutBtn = document.getElementById('logoutBtn');
 
-// Protect Dashboard: Kick user to login if not authenticated
+// Route protection check
 auth.onAuthStateChanged((user) => {
     if (user) {
         userEmailText.textContent = user.email;
@@ -30,4 +30,3 @@ logoutBtn.addEventListener('click', () => {
         window.location.href = "index.html";
     });
 });
-
