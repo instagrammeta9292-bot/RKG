@@ -1,146 +1,342 @@
-import { auth, db } from "./firebase.js";
+<!DOCTYPE html>
+<html lang="en">
 
-import {
-    onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+<head>
 
-import {
-    doc,
-    getDoc,
-    setDoc,
-    collection,
-    query,
-    where,
-    getDocs,
-    serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-const form = document.getElementById("profileForm");
-const imageInput = document.getElementById("profileImage");
-const preview = document.getElementById("previewImage");
-const usernameInput = document.getElementById("username");
-const message = document.getElementById("message");
+<title>Create Profile - RHK</title>
 
-let currentUser = null;
+<link rel="preconnect" href="https://fonts.googleapis.com">
 
-onAuthStateChanged(auth, async (user) => {
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    if (!user) {
-        window.location.href = "index.html";
-        return;
-    }
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-    currentUser = user;
+<link rel="stylesheet" href="css/style.css">
 
-    const profileRef = doc(db, "users", user.uid);
-    const profileSnap = await getDoc(profileRef);
+<style>
 
-    if (profileSnap.exists()) {
-        window.location.href = "home.html";
-    }
+body{
+background:#f8fafc;
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
+padding:20px;
+}
 
-});
+.profile-card{
 
-imageInput.addEventListener("change", () => {
+width:100%;
+max-width:420px;
 
-    const file = imageInput.files[0];
+background:#fff;
 
-    if (!file) return;
+padding:30px;
 
-    preview.src = URL.createObjectURL(file);
+border-radius:25px;
 
-});
+box-shadow:0 15px 40px rgba(0,0,0,.08);
 
-form.addEventListener("submit", async (e) => {
+}
 
-    e.preventDefault();
+.title{
 
-    if (!currentUser) return;
+text-align:center;
 
-    const username = usernameInput.value.trim().toLowerCase();
-    const file = imageInput.files[0];
+margin-bottom:25px;
 
-    if (username.length < 3) {
-        message.textContent = "Username must be at least 3 characters.";
-        return;
-    }
+}
 
-    if (!file) {
-        message.textContent = "Select a profile picture.";
-        return;
-    }
+.title h1{
 
-    message.textContent = "Checking username...";
+font-size:30px;
 
-    const q = query(
-        collection(db, "users"),
-        where("username", "==", username)
-    );
+font-weight:700;
 
-    const result = await getDocs(q);
+color:#111827;
 
-    if (!result.empty) {
-        message.textContent = "Username already taken.";
-        return;
-    }
+}
 
-    message.textContent = "Uploading image...";
+.title p{
 
-    const formData = new FormData();
+margin-top:6px;
 
-    formData.append("file", file);
-    formData.append("upload_preset", "rhk_upload");
-      try {
+color:#6b7280;
 
-        const uploadResponse = await fetch(
-            "https://api.cloudinary.com/v1_1/nhy9lfkt/image/upload",
-            {
-                method: "POST",
-                body: formData
-            }
-        );
+}
 
-        const uploadResult = await uploadResponse.json();
+.image-area{
 
-        if (!uploadResult.secure_url) {
-            throw new Error("Image upload failed.");
-        }
+display:flex;
 
-        message.textContent = "Saving profile...";
+justify-content:center;
 
-        await setDoc(doc(db, "users", currentUser.uid), {
+margin-bottom:25px;
 
-            uid: currentUser.uid,
-            email: currentUser.email,
-            username: username,
-            photoURL: uploadResult.secure_url,
+}
 
-            followers: 0,
-            following: 0,
-            posts: 0,
+.image-box{
 
-            createdAt: serverTimestamp()
+width:140px;
 
-        });
+height:140px;
 
-        message.style.color = "#4CAF50";
-        message.textContent = "Profile created successfully!";
+border-radius:50%;
 
-        setTimeout(() => {
+background:#eef2ff;
 
-            window.location.href = "home.html";
+border:3px dashed #2563eb;
 
-        }, 1000);
+display:flex;
 
-    } catch (error) {
+justify-content:center;
 
-        console.error(error);
+align-items:center;
 
-        message.style.color = "#ff4d4d";
+overflow:hidden;
 
-        message.textContent =
-            "Something went wrong. Please try again.";
+cursor:pointer;
 
-    }
+}
 
-});
+.image-box img{
+
+width:100%;
+
+height:100%;
+
+object-fit:cover;
+
+display:none;
+
+}
+
+.image-box span{
+
+font-size:14px;
+
+color:#2563eb;
+
+text-align:center;
+
+padding:10px;
+
+}
+
+input[type=file]{
+
+display:none;
+
+}
+
+.form-group{
+
+margin-bottom:20px;
+
+}
+
+.form-group label{
+
+display:block;
+
+margin-bottom:8px;
+
+font-weight:600;
+
+}
+
+.form-group input{
+
+width:100%;
+
+height:55px;
+
+border:1px solid #d1d5db;
+
+border-radius:15px;
+
+padding:0 15px;
+
+font-size:15px;
+
+outline:none;
+
+}
+
+.form-group textarea{
+
+width:100%;
+
+height:120px;
+
+border:1px solid #d1d5db;
+
+border-radius:15px;
+
+padding:15px;
+
+resize:none;
+
+font-size:15px;
+
+outline:none;
+
+}
+
+.form-group input:focus,
+.form-group textarea:focus{
+
+border-color:#2563eb;
+
+}
+
+.saveBtn{
+
+width:100%;
+
+height:55px;
+
+border:none;
+
+border-radius:15px;
+
+background:#2563eb;
+
+color:white;
+
+font-size:17px;
+
+font-weight:600;
+
+cursor:pointer;
+
+transition:.25s;
+
+}
+
+.saveBtn:hover{
+
+background:#1d4ed8;
+
+}
+
+#message{
+
+margin-top:15px;
+
+text-align:center;
+
+font-size:14px;
+
+color:#ef4444;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="profile-card">
+
+<div class="title">
+
+<h1>Create Profile</h1>
+
+<p>Complete your RHK profile</p>
+
+</div>
+
+<div class="image-area">
+
+<label class="image-box" for="profileImage">
+
+<img id="preview">
+
+<span id="uploadText">
+
+Choose Photo
+
+</span>
+
+</label>
+
+<input
+type="file"
+id="profileImage"
+accept="image/*">
+
+</div>
+
+<form id="profileForm">
+
+<div class="form-group">
+
+<label>Username</label>
+
+<input
+type="text"
+id="username"
+placeholder="Choose a username"
+required>
+
+</div>
+
+<div class="form-group">
+
+<label>Bio</label>
+
+<textarea
+id="bio"
+placeholder="Tell people about yourself..."></textarea>
+
+</div>
+
+<button
+type="submit"
+class="saveBtn"
+id="saveBtn">
+
+Save Profile
+
+</button>
+
+</form>
+
+<p id="message"></p>
+
+</div>
+
+<script>
+
+const imageInput=document.getElementById("profileImage");
+
+const preview=document.getElementById("preview");
+
+const uploadText=document.getElementById("uploadText");
+
+imageInput.onchange=()=>{
+
+const file=imageInput.files[0];
+
+if(!file)return;
+
+preview.src=URL.createObjectURL(file);
+
+preview.style.display="block";
+
+uploadText.style.display="none";
+
+};
+
+</script>
+
+<script type="module" src="js/create-profile.js"></script>
+
+</body>
+
+</html>
