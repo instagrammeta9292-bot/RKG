@@ -4,37 +4,54 @@
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
 
 <title>RHK Profile</title>
 
-<link rel="stylesheet" href="css/view-profile.css">
+<link rel="preconnect"
+href="https://fonts.googleapis.com">
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect"
+href="https://fonts.gstatic.com"
+crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+rel="stylesheet">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+<link rel="stylesheet"
+href="css/view-profile.css">
 
 </head>
 
 <body>
 
-<header class="topbar">
+<header class="topBar">
 
-<button class="backBtn" onclick="history.back()">
+<button id="backBtn">
 
-←
+<i class="fa-solid fa-arrow-left"></i>
 
 </button>
 
-<h2>RHK</h2>
+<h2>Profile</h2>
+
+<div></div>
 
 </header>
 
-<div class="profile-container">
+<div class="profileContainer">
+
+<div class="profileCard">
 
 <img
 id="profilePhoto"
-class="profile-photo"
 src=""
-alt="Profile">
+class="profilePhoto">
 
 <h2 id="username">
 
@@ -44,7 +61,7 @@ Loading...
 
 <p id="bio">
 
-No bio available
+Please wait...
 
 </p>
 
@@ -52,7 +69,7 @@ No bio available
 
 <div>
 
-<h3 id="connectionCount">
+<h3 id="connections">
 
 0
 
@@ -64,11 +81,11 @@ No bio available
 
 </div>
 
-<div id="buttonArea">
+<div id="actionArea">
 
 <button
 id="connectBtn"
-class="connectBtn">
+class="primaryBtn">
 
 Connect
 
@@ -78,9 +95,41 @@ Connect
 
 </div>
 
-<script type="module" src="js/firebase.js"></script>
+<div class="infoCard">
 
-<script type="module" src="js/view-profile.js"></script>
+<h3>
+
+About
+
+</h3>
+
+<p id="aboutText">
+
+No bio available.
+
+</p>
+
+</div>
+
+</div>
+
+<script>
+
+document
+.getElementById("backBtn")
+.onclick=()=>{
+
+history.back();
+
+};
+
+</script>
+
+<script
+type="module"
+src="js/view-profile.js">
+
+</script>
 
 </body>
 
