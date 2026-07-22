@@ -1,14 +1,13 @@
 import { auth } from "./firebase.js";
 
 import {
-    signInWithEmailAndPassword
-} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+  signInWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 
 const loginForm = document.getElementById("loginForm");
 const message = document.getElementById("message");
 
 loginForm.addEventListener("submit", async (e) => {
-
     e.preventDefault();
 
     const email = document.getElementById("email").value.trim();
@@ -21,42 +20,44 @@ loginForm.addEventListener("submit", async (e) => {
 
         await signInWithEmailAndPassword(auth, email, password);
 
-        message.style.color = "#8BC34A";
-        message.textContent = "Login successful!";
+        message.style.color = "#4CAF50";
+        message.textContent = "Login Successful";
 
         setTimeout(() => {
             window.location.href = "home.html";
-        }, 700);
+        }, 1000);
 
     } catch (error) {
+
+        let errorMessage = "Login failed.";
 
         switch (error.code) {
 
             case "auth/invalid-email":
-                message.textContent = "Invalid email address.";
-                break;
-
-            case "auth/user-not-found":
-                message.textContent = "No account found with this email.";
+                errorMessage = "Invalid email address.";
                 break;
 
             case "auth/invalid-credential":
-                message.textContent = "Incorrect email or password.";
+                errorMessage = "Incorrect email or password.";
                 break;
 
-            case "auth/wrong-password":
-                message.textContent = "Incorrect password.";
+            case "auth/user-disabled":
+                errorMessage = "This account has been disabled.";
+                break;
+
+            case "auth/network-request-failed":
+                errorMessage = "Check your internet connection.";
                 break;
 
             case "auth/too-many-requests":
-                message.textContent = "Too many attempts. Please try again later.";
+                errorMessage = "Too many login attempts. Try again later.";
                 break;
 
             default:
-                message.textContent = error.message;
+                errorMessage = error.message;
         }
 
-        message.style.color = "#ff6b6b";
+        message.style.color = "#ff4d4d";
+        message.textContent = errorMessage;
     }
-
 });
