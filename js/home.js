@@ -46,7 +46,9 @@ onAuthStateChanged(auth, async (user) => {
 
 profileBtn.addEventListener("click", () => {
 
-    window.location.href = "edit-profile.html";
+    if (!currentUser) return;
+
+    window.location.href = "view-profile.html?uid=" + currentUser.uid;
 
 });
 /* ===========================
