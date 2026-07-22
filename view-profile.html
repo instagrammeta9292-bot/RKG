@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>RHK Profile</title>
+
+<link rel="stylesheet" href="css/view-profile.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+
+<header class="topbar">
+
+<button class="backBtn" onclick="history.back()">
+
+←
+
+</button>
+
+<h2>RHK</h2>
+
+</header>
+
+<div class="profile-container">
+
+<img
+id="profilePhoto"
+class="profile-photo"
+src=""
+alt="Profile">
+
+<h2 id="username">
+
+Loading...
+
+</h2>
+
+<p id="bio">
+
+No bio available
+
+</p>
+
+<div class="stats">
+
+<div>
+
+<h3 id="connectionCount">
+
+0
+
+</h3>
+
+<span>Connections</span>
+
+</div>
+
+</div>
+
+<div id="buttonArea">
+
+<button
+id="connectBtn"
+class="connectBtn">
+
+Connect
+
+</button>
+
+</div>
+
+</div>
+
+<script type="module" src="js/firebase.js"></script>
+
+<script type="module" src="js/view-profile.js"></script>
+
+</body>
+
+</html>
