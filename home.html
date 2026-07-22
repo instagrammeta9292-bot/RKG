@@ -1,15 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RHK Home</title>
 
-    <link rel="stylesheet" href="css/home.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <script type="module" src="js/firebase.js"></script>
-    <script type="module" src="js/auth.js"></script>
+<title>RHK Home</title>
+
+<link rel="stylesheet" href="css/home.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
 </head>
+
 <body>
 
 <header class="topbar">
@@ -22,21 +26,114 @@
 
 </header>
 
-<main class="container">
+<main>
 
-    <div class="welcome-card">
+<div class="profile-card">
 
-        <h2>Welcome to RHK 🎉</h2>
+<img
+id="profileImage"
+src=""
+alt="Profile Picture">
 
-        <p id="userEmail"></p>
+<h2 id="username"></h2>
 
-        <p>
-            You have successfully logged into your RHK account.
-        </p>
+<p>Welcome to the RHK Community 🚀</p>
 
-    </div>
+</div>
+
+<div class="feed">
+
+<div class="post">
+
+<div class="post-header">
+
+<img
+id="postProfile"
+src=""
+class="small-profile">
+
+<div>
+
+<h3 id="postUsername"></h3>
+
+<p>First Post</p>
+
+</div>
+
+</div>
+
+<div class="post-image">
+
+<img
+src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=900"
+alt="Post">
+
+</div>
+
+<div class="actions">
+
+<button>❤️ Like</button>
+
+<button>💬 Comment</button>
+
+<button>📤 Share</button>
+
+</div>
+
+<p class="caption">
+
+Welcome to your RHK social network.
+
+</p>
+
+</div>
+
+</div>
 
 </main>
 
+<nav class="bottom-nav">
+
+<a href="#">🏠</a>
+
+<a href="#">🔍</a>
+
+<a href="#">➕</a>
+
+<a href="#">💬</a>
+
+<a href="#">👤</a>
+
+</nav>
+
+<script type="module" src="js/firebase.js"></script>
+
+<script type="module" src="js/auth.js"></script>
+
+<script>
+
+const profile=document.getElementById("profileImage");
+
+const username=document.getElementById("username");
+
+const postProfile=document.getElementById("postProfile");
+
+const postUsername=document.getElementById("postUsername");
+
+const observer=new MutationObserver(()=>{
+
+postProfile.src=profile.src;
+
+postUsername.innerText=username.innerText;
+
+});
+
+observer.observe(profile,{attributes:true});
+
+observer.observe(username,{childList:true});
+
+</script>
+
 </body>
+
 </html>
