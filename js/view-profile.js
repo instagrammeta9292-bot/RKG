@@ -76,15 +76,25 @@ async function loadProfile() {
         // Viewing your own profile
         if (profileUid === currentUser.uid) {
 
-            actionArea.innerHTML = `
-                <button
-                    class="primaryBtn"
-                    onclick="window.location.href='edit-profile.html'">
-                    Edit Profile
-                </button>
-            `;
+    actionArea.innerHTML = `
+        <button
+            class="primaryBtn"
+            id="editProfileBtn">
+            Edit Profile
+        </button>
+    `;
 
-            return;
+    document.getElementById("editProfileBtn").onclick = () => {
+
+        window.location.href = "create-profile.html";
+
+        // Later, when we build edit-profile.html,
+        // change this to:
+        // window.location.href = "edit-profile.html";
+
+    };
+
+    return;
 
         }
 
