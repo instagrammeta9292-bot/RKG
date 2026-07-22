@@ -40,10 +40,10 @@ if (userCredential.user) {
         message.textContent = "Account created successfully!";
 
       
-            await createUserWithEmailAndPassword(auth, email, password);
+          
 
 setTimeout(() => {
-    window.location.replace("create-profile.html");
+    window.location.href = "create-profile.html";
 }, 500);
 
     } catch (error) {
