@@ -433,6 +433,9 @@ function loadConnectedUsers() {
         for (const connection of snapshot.docs) {
 
             const otherUid = connection.id;
+            if (otherUid === currentUser.uid) {
+    continue;
+            }
 
             try {
 
