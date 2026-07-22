@@ -1,8 +1,8 @@
 import { auth } from "./firebase.js";
 
 import {
-    createUserWithEmailAndPassword
-} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+  createUserWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 
 const signupForm = document.getElementById("signupForm");
 const message = document.getElementById("message");
@@ -16,19 +16,13 @@ signupForm.addEventListener("submit", async (e) => {
     const confirmPassword = document.getElementById("confirmPassword").value;
 
     if (password !== confirmPassword) {
-        message.style.color = "#ff4d4d";
+        message.style.color = "red";
         message.textContent = "Passwords do not match.";
         return;
     }
 
-    if (password.length < 6) {
-        message.style.color = "#ff4d4d";
-        message.textContent = "Password must be at least 6 characters.";
-        return;
-    }
-
     message.style.color = "#ffd54f";
-    message.textContent = "Creating your account...";
+    message.textContent = "Creating account...";
 
     try {
 
@@ -38,38 +32,41 @@ signupForm.addEventListener("submit", async (e) => {
             password
         );
 
-        message.style.color = "#8BC34A";
+        message.style.color = "lime";
         message.textContent = "Account created successfully!";
 
         setTimeout(() => {
             window.location.href = "home.html";
-        }, 800);
+        }, 1000);
 
     } catch (error) {
+
+        let errorMessage = "Unable to create account.";
 
         switch (error.code) {
 
             case "auth/email-already-in-use":
-                message.textContent = "This email is already registered.";
+                errorMessage = "Email already exists.";
                 break;
 
             case "auth/invalid-email":
-                message.textContent = "Please enter a valid email address.";
+                errorMessage = "Invalid email address.";
                 break;
 
             case "auth/weak-password":
-                message.textContent = "Password should be at least 6 characters.";
+                errorMessage = "Password must be at least 6 characters.";
                 break;
 
             case "auth/network-request-failed":
-                message.textContent = "Network error. Check your internet connection.";
+                errorMessage = "Check your internet connection.";
                 break;
 
             default:
-                message.textContent = error.message;
+                errorMessage = error.message;
         }
 
-        message.style.color = "#ff4d4d";
+        message.style.color = "red";
+        message.textContent = errorMessage;
     }
 
 });
