@@ -1,7 +1,8 @@
 import { auth, db } from "./firebase.js";
 
 import {
-  signInWithEmailAndPassword
+  signInWithEmailAndPassword,
+  onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 
 import {
@@ -9,126 +10,112 @@ import {
   getDoc
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
-const loginForm = document.getElementById("loginForm");
+const form = document.getElementById("loginForm");
 const email = document.getElementById("email");
 const password = document.getElementById("password");
+const loginBtn = document.getElementById("loginBtn");
+const message = document.getElementById("loginMessage");
 
-const message = document.getElementById("message");
+/* Auto Login */
 
-const loader = document.getElementById("loader");
-const loginText = document.getElementById("loginText");
+onAuthStateChanged(auth, async (user) => {
 
-const togglePassword = document.getElementById("togglePassword");
-const eyeIcon = document.getElementById("eyeIcon");
+    if (!user) return;
 
-// Show / Hide Password
+    try {
 
-togglePassword.addEventListener("click", () => {
+        const profileRef = doc(db, "users", user.uid);
+        const profileSnap = await getDoc(profileRef);
 
-    if (password.type === "password") {
+        if (profileSnap.exists()) {
 
-        password.type = "text";
+            window.location.replace("home.html");
 
-        eyeIcon.classList.remove("fa-eye");
-        eyeIcon.classList.add("fa-eye-slash");
+        } else {
 
-    } else {
+            window.location.replace("create-profile.html");
 
-        password.type = "password";
+        }
 
-        eyeIcon.classList.remove("fa-eye-slash");
-        eyeIcon.classList.add("fa-eye");
+    } catch (e) {
+
+        console.error(e);
 
     }
 
 });
 
-// Login
+/* Login */
 
-loginForm.addEventListener("submit", async (e) => {
+form.addEventListener("submit", async (e) => {
 
     e.preventDefault();
 
     message.textContent = "";
-    message.style.color = "#FFD54F";
 
-    loader.style.display = "block";
-    loginText.style.display = "none";
+    loginBtn.disabled = true;
+    loginBtn.classList.add("loading");
+    loginBtn.textContent = "Logging in...";
 
     try {
 
-        const userCredential = await signInWithEmailAndPassword(
+        const result = await signInWithEmailAndPassword(
+
             auth,
+
             email.value.trim(),
+
             password.value
+
         );
 
-        const user = userCredential.user;
+        const uid = result.user.uid;
 
-        const profileRef = doc(db, "users", user.uid);
+        const profileRef = doc(db, "users", uid);
 
         const profileSnap = await getDoc(profileRef);
 
-        message.style.color = "#7CFC8A";
-        message.textContent = "Login Successful";
+        if (profileSnap.exists()) {
 
-        setTimeout(() => {
+            window.location.replace("home.html");
 
-            if (profileSnap.exists()) {
+        } else {
 
-                window.location.href = "home.html";
+            window.location.replace("create-profile.html");
 
-            } else {
-
-                window.location.href = "create-profile.html";
-
-            }
-
-        }, 800);
+        }
 
     } catch (error) {
 
-        loader.style.display = "none";
-        loginText.style.display = "inline";
-
         switch (error.code) {
 
-            case "auth/invalid-email":
-                message.textContent = "Invalid email address.";
-                break;
-
             case "auth/invalid-credential":
+            case "auth/wrong-password":
+            case "auth/user-not-found":
+
                 message.textContent = "Incorrect email or password.";
                 break;
 
-            case "auth/user-disabled":
-                message.textContent = "This account is disabled.";
-                break;
+            case "auth/invalid-email":
 
-            case "auth/network-request-failed":
-                message.textContent = "No internet connection.";
+                message.textContent = "Invalid email address.";
                 break;
 
             case "auth/too-many-requests":
+
                 message.textContent = "Too many attempts. Try again later.";
                 break;
 
             default:
+
                 message.textContent = error.message;
 
         }
 
-        message.style.color = "#ff6b6b";
-
-        return;
-
     }
 
-});
-
-window.addEventListener("pageshow", () => {
-
-    loader.style.display = "none";
-    loginText.style.display = "inline";
+    loginBtn.disabled = false;
+    loginBtn.classList.remove("loading");
+    loginBtn.textContent = "Login";
 
 });
