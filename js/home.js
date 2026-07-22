@@ -9,21 +9,29 @@ import {
     query,
     where,
     onSnapshot,
+    getDocs,
+    getDoc,
     doc,
-    getDoc
+    setDoc,
+    updateDoc,
+    deleteDoc,
+    serverTimestamp,
+    increment
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
+const searchInput = document.getElementById("searchInput");
 const requestList = document.getElementById("requestList");
 const requestCount = document.getElementById("requestCount");
-const userList = document.getElementById("userList");
+const chatList = document.getElementById("chatList");
+const profileBtn = document.getElementById("profileBtn");
 
 let currentUser = null;
 
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
 
     if (!user) {
 
-        window.location.href = "index.html";
+        window.location.replace("login.html");
         return;
 
     }
@@ -36,15 +44,128 @@ onAuthStateChanged(auth, (user) => {
 
 });
 
+profileBtn.addEventListener("click", () => {
+
+    window.location.href = "edit-profile.html";
+
+});
+/* ===========================
+   SEARCH USERS
+=========================== */
+
+searchInput.addEventListener("input", searchUsers);
+
+async function searchUsers() {
+
+    const keyword = searchInput.value.trim().toLowerCase();
+
+    // Show connected users again if search is empty
+    if (keyword === "") {
+
+        loadConnectedUsers();
+        return;
+
+    }
+
+    chatList.innerHTML = "";
+
+    try {
+
+        const snapshot = await getDocs(collection(db, "users"));
+
+        let found = 0;
+
+        snapshot.forEach((userDoc) => {
+
+            // Don't show yourself
+            if (userDoc.id === currentUser.uid) return;
+
+            const user = userDoc.data();
+
+            const username = (user.username || "").toLowerCase();
+
+            if (!username.includes(keyword)) return;
+
+            found++;
+
+            const card = document.createElement("div");
+
+            card.className = "chatCard";
+
+            card.innerHTML = `
+
+                <img
+                    class="avatar"
+                    src="${user.photoURL || 'https://via.placeholder.com/60'}"
+                    alt="Profile">
+
+                <div class="userDetails">
+
+                    <h4>${user.username}</h4>
+
+                    <p>${user.bio || "No bio available"}</p>
+
+                </div>
+
+                <i class="fa-solid fa-chevron-right"></i>
+
+            `;
+
+            card.addEventListener("click", () => {
+
+                window.location.href =
+                    "view-profile.html?uid=" + userDoc.id;
+
+            });
+
+            chatList.appendChild(card);
+
+        });
+
+        if (found === 0) {
+
+            chatList.innerHTML = `
+
+                <div class="empty">
+
+                    No users found
+
+                </div>
+
+            `;
+
+        }
+
+    } catch (error) {
+
+        console.error(error);
+
+        chatList.innerHTML = `
+
+            <div class="empty">
+
+                Failed to load users.
+
+            </div>
+
+        `;
+
+    }
+
+}
+/* ===========================
+   REAL-TIME CONNECTION REQUESTS
+=========================== */
+
 function loadConnectionRequests() {
 
-    const q = query(
+    const requestsQuery = query(
         collection(db, "connectionRequests"),
         where("toUid", "==", currentUser.uid),
         where("status", "==", "pending")
     );
 
-    onSnapshot(q, async (snapshot) => {
+    onSnapshot(requestsQuery, async (snapshot) => {
 
         requestList.innerHTML = "";
 
@@ -53,7 +174,7 @@ function loadConnectionRequests() {
         if (snapshot.empty) {
 
             requestList.innerHTML = `
-                <div class="empty-card">
+                <div class="empty">
                     No connection requests
                 </div>
             `;
@@ -62,74 +183,96 @@ function loadConnectionRequests() {
 
         }
 
-        for (const request of snapshot.docs) {
+        for (const requestDoc of snapshot.docs) {
 
-            const data = request.data();
+            const request = requestDoc.data();
 
-            const senderRef = doc(db, "users", data.fromUid);
+            try {
 
-            const senderSnap = await getDoc(senderRef);
+                const senderSnap = await getDoc(
+                    doc(db, "users", request.fromUid)
+                );
 
-            if (!senderSnap.exists()) continue;
+                if (!senderSnap.exists()) continue;
 
-            const sender = senderSnap.data();
+                const sender = senderSnap.data();
 
-            const card = document.createElement("div");
+                const card = document.createElement("div");
 
-            card.className = "request-card";
+                card.className = "requestCard";
 
-            card.innerHTML = `
-                <img src="${sender.photoURL}" alt="Profile">
+                card.innerHTML = `
 
-                <div class="user-info">
+                    <img
+                        class="avatar"
+                        src="${sender.photoURL || 'https://via.placeholder.com/60'}"
+                        alt="Profile">
 
-                    <h4>${sender.username}</h4>
+                    <div class="userDetails">
 
-                    <p>Wants to connect with you</p>
+                        <h4>${sender.username}</h4>
 
-                    <div class="request-buttons">
+                        <p>Wants to connect with you</p>
 
-                        <button
-                            class="acceptBtn"
-                            data-id="${request.id}"
-                            data-uid="${data.fromUid}">
-                            Accept
-                        </button>
+                        <div class="requestButtons">
 
-                        <button
-                            class="rejectBtn"
-                            data-id="${request.id}">
-                            Reject
-                        </button>
+                            <button
+                                class="acceptBtn"
+                                data-request="${requestDoc.id}"
+                                data-user="${request.fromUid}">
+
+                                Accept
+
+                            </button>
+
+                            <button
+                                class="rejectBtn"
+                                data-request="${requestDoc.id}">
+
+                                Reject
+
+                            </button>
+
+                        </div>
 
                     </div>
 
-                </div>
-            `;
+                `;
 
-            requestList.appendChild(card);
+                requestList.appendChild(card);
+
+            } catch (error) {
+
+                console.error(error);
+
+            }
 
         }
 
-        document.querySelectorAll(".acceptBtn").forEach(btn => {
+        document.querySelectorAll(".acceptBtn").forEach(button => {
 
-            btn.addEventListener("click", () => {
+            button.addEventListener("click", () => {
 
                 acceptRequest(
-                    btn.dataset.id,
-                    btn.dataset.uid
+
+                    button.dataset.request,
+
+                    button.dataset.user
+
                 );
 
             });
 
         });
 
-        document.querySelectorAll(".rejectBtn").forEach(btn => {
+        document.querySelectorAll(".rejectBtn").forEach(button => {
 
-            btn.addEventListener("click", () => {
+            button.addEventListener("click", () => {
 
                 rejectRequest(
-                    btn.dataset.id
+
+                    button.dataset.request
+
                 );
 
             });
@@ -139,80 +282,127 @@ function loadConnectionRequests() {
     });
 
 }
-import {
-    doc,
-    setDoc,
-    updateDoc,
-    deleteDoc,
-    increment,
-    collection,
-    onSnapshot,
-    serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+/* ===========================
+   ACCEPT CONNECTION REQUEST
+=========================== */
 
 async function acceptRequest(requestId, senderUid) {
 
     try {
 
+        // Add sender to my connections
         await setDoc(
-            doc(db, "users", currentUser.uid, "connections", senderUid),
+
+            doc(
+                db,
+                "users",
+                currentUser.uid,
+                "connections",
+                senderUid
+            ),
+
             {
-                connected: true,
+                uid: senderUid,
                 connectedAt: serverTimestamp()
             }
+
         );
 
+        // Add me to sender's connections
         await setDoc(
-            doc(db, "users", senderUid, "connections", currentUser.uid),
+
+            doc(
+                db,
+                "users",
+                senderUid,
+                "connections",
+                currentUser.uid
+            ),
+
             {
-                connected: true,
+                uid: currentUser.uid,
                 connectedAt: serverTimestamp()
             }
+
         );
 
+        // Increase my connection count
         await updateDoc(
+
             doc(db, "users", currentUser.uid),
+
             {
                 connectionCount: increment(1)
             }
+
         );
 
+        // Increase sender's connection count
         await updateDoc(
+
             doc(db, "users", senderUid),
+
             {
                 connectionCount: increment(1)
             }
+
         );
 
+        // Delete the pending request
         await deleteDoc(
-            doc(db, "connectionRequests", requestId)
+
+            doc(
+                db,
+                "connectionRequests",
+                requestId
+            )
+
         );
+
+        alert("Connection accepted!");
 
     } catch (error) {
 
         console.error(error);
+
         alert("Unable to accept request.");
 
     }
 
 }
+/* ===========================
+   REJECT CONNECTION REQUEST
+=========================== */
 
 async function rejectRequest(requestId) {
 
     try {
 
+        // Delete the pending request
         await deleteDoc(
-            doc(db, "connectionRequests", requestId)
+
+            doc(
+                db,
+                "connectionRequests",
+                requestId
+            )
+
         );
+
+        // The onSnapshot listener will automatically
+        // remove the request card and update the count.
 
     } catch (error) {
 
         console.error(error);
+
         alert("Unable to reject request.");
 
     }
 
-}
+}/* ===========================
+   LOAD CONNECTED USERS
+=========================== */
 
 function loadConnectedUsers() {
 
@@ -225,16 +415,15 @@ function loadConnectedUsers() {
 
     onSnapshot(connectionsRef, async (snapshot) => {
 
-        userList.innerHTML = "";
+        chatList.innerHTML = "";
 
         if (snapshot.empty) {
 
-            userList.innerHTML = `
-                <div class="empty-card">
+            chatList.innerHTML = `
+                <div class="empty">
                     No connected users yet
                 </div>
             `;
-
             return;
 
         }
@@ -243,53 +432,195 @@ function loadConnectedUsers() {
 
             const otherUid = connection.id;
 
-            const userSnap = await getDoc(
-                doc(db, "users", otherUid)
-            );
+            try {
 
-            if (!userSnap.exists()) continue;
+                const userSnap = await getDoc(
+                    doc(db, "users", otherUid)
+                );
 
-            const user = userSnap.data();
+                if (!userSnap.exists()) continue;
 
-            const card = document.createElement("div");
+                const user = userSnap.data();
 
-            card.className = "user-card";
+                const onlineStatus = user.isOnline
+                    ? '<span class="online"></span>'
+                    : '';
 
-            card.innerHTML = `
-                <img src="${user.photoURL}" alt="Profile">
+                const card = document.createElement("div");
 
-                <div class="user-info">
+                card.className = "chatCard";
 
-                    <h4>${user.username}</h4>
+                card.innerHTML = `
 
-                    <p>${user.bio || "No bio available"}</p>
+                    <img
+                        class="avatar"
+                        src="${user.photoURL || 'https://via.placeholder.com/60'}"
+                        alt="Profile">
 
-                </div>
+                    <div class="userDetails">
 
-                <button class="chatBtn">
-                    Chat
-                </button>
-            `;
+                        <h4>
+                            ${user.username}
+                            ${onlineStatus}
+                        </h4>
 
-            card.querySelector("img").onclick = () => {
-                window.location.href =
-                    "view-profile.html?uid=" + otherUid;
-            };
+                        <p>
+                            ${user.bio || "No bio available"}
+                        </p>
 
-            card.querySelector(".user-info").onclick = () => {
-                window.location.href =
-                    "view-profile.html?uid=" + otherUid;
-            };
+                    </div>
 
-            card.querySelector(".chatBtn").onclick = () => {
-                window.location.href =
-                    "chat.html?uid=" + otherUid;
-            };
+                    <button
+                        class="chatBtn"
+                        data-uid="${otherUid}">
+                        Chat
+                    </button>
 
-            userList.appendChild(card);
+                `;
+
+                card.querySelector(".avatar").onclick = () => {
+
+                    window.location.href =
+                        "view-profile.html?uid=" + otherUid;
+
+                };
+
+                card.querySelector(".userDetails").onclick = () => {
+
+                    window.location.href =
+                        "view-profile.html?uid=" + otherUid;
+
+                };
+
+                card.querySelector(".chatBtn").onclick = () => {
+
+                    window.location.href =
+                        "chat.html?uid=" + otherUid;
+
+                };
+
+                chatList.appendChild(card);
+
+            } catch (error) {
+
+                console.error(error);
+
+            }
 
         }
 
     });
 
 }
+/* ===========================
+   ONLINE STATUS
+=========================== */
+
+async function updateOnlineStatus(isOnline) {
+
+    if (!currentUser) return;
+
+    try {
+
+        await updateDoc(
+
+            doc(db, "users", currentUser.uid),
+
+            {
+                isOnline: isOnline,
+                lastSeen: serverTimestamp()
+            }
+
+        );
+
+    } catch (error) {
+
+        console.error(error);
+
+    }
+
+}
+
+/* User enters app */
+
+window.addEventListener("load", () => {
+
+    updateOnlineStatus(true);
+
+});
+
+/* User closes app */
+
+window.addEventListener("beforeunload", () => {
+
+    updateOnlineStatus(false);
+
+});
+
+/* App goes to background */
+
+document.addEventListener("visibilitychange", () => {
+
+    if (document.visibilityState === "hidden") {
+
+        updateOnlineStatus(false);
+
+    } else {
+
+        updateOnlineStatus(true);
+
+    }
+
+});
+
+/* ===========================
+   REFRESH LAST SEEN
+=========================== */
+
+setInterval(() => {
+
+    if (!currentUser) return;
+
+    updateDoc(
+
+        doc(db, "users", currentUser.uid),
+
+        {
+            lastSeen: serverTimestamp()
+        }
+
+    ).catch(console.error);
+
+},60000);
+
+/* ===========================
+   SEARCH BUTTON
+=========================== */
+
+const searchBtn = document.getElementById("searchBtn");
+
+if(searchBtn){
+
+searchBtn.onclick=()=>{
+
+searchInput.focus();
+
+};
+
+}
+
+/* ===========================
+   ERROR HANDLER
+=========================== */
+
+window.addEventListener("error",(e)=>{
+
+console.error(e.error);
+
+});
+
+/* ===========================
+   RHK HOME READY
+=========================== */
+
+console.log("RHK Home Loaded Successfully");
