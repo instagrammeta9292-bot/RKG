@@ -1,31 +1,60 @@
-import { auth } from "./firebase.js";
+import { auth, db } from "./firebase.js";
 
 import {
-  signInWithEmailAndPassword
+    signInWithEmailAndPassword
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+
+import {
+    doc,
+    getDoc
+} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
 const loginForm = document.getElementById("loginForm");
 const message = document.getElementById("message");
 
 loginForm.addEventListener("submit", async (e) => {
+
     e.preventDefault();
 
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value;
 
-    message.style.color = "#ffd54f";
+    message.style.color = "#FFD54F";
     message.textContent = "Signing in...";
 
     try {
 
-        await signInWithEmailAndPassword(auth, email, password);
+        // Login with Firebase Authentication
+        const userCredential = await signInWithEmailAndPassword(
+            auth,
+            email,
+            password
+        );
+
+        const user = userCredential.user;
+
+        // Check if profile exists in Firestore
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
 
         message.style.color = "#4CAF50";
-        message.textContent = "Login Successful";
+        message.textContent = "Login successful";
 
         setTimeout(() => {
-            window.location.href = "home.html";
-        }, 1000);
+
+            if (userSnap.exists()) {
+
+                // Existing user
+                window.location.href = "home.html";
+
+            } else {
+
+                // New user
+                window.location.href = "create-profile.html";
+
+            }
+
+        }, 800);
 
     } catch (error) {
 
@@ -50,7 +79,7 @@ loginForm.addEventListener("submit", async (e) => {
                 break;
 
             case "auth/too-many-requests":
-                errorMessage = "Too many login attempts. Try again later.";
+                errorMessage = "Too many attempts. Try again later.";
                 break;
 
             default:
@@ -60,4 +89,5 @@ loginForm.addEventListener("submit", async (e) => {
         message.style.color = "#ff4d4d";
         message.textContent = errorMessage;
     }
+
 });
