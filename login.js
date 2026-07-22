@@ -12,7 +12,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 
-// Check if user is already logged in (Persistence)
+// Keep user logged in if session persists
 auth.onAuthStateChanged((user) => {
     if (user) {
         window.location.href = "dashboard.html";
@@ -29,13 +29,16 @@ loginForm.addEventListener('submit', (e) => {
     const email = emailInput.value.trim();
     const password = passwordInput.value;
 
+    statusMessage.textContent = "Signing in...";
+    statusMessage.className = "";
+
     auth.signInWithEmailAndPassword(email, password)
         .then(() => {
             window.location.href = "dashboard.html";
         })
         .catch((error) => {
+            console.error("Login Error Code:", error.code);
             statusMessage.textContent = error.message;
             statusMessage.className = "error-msg";
         });
 });
-
