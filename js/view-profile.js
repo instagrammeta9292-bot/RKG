@@ -100,3 +100,464 @@ async function loadProfile() {
     }
 
 }
+import {
+    collection,
+    query,
+    where,
+    getDocs
+} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+/* ===========================
+   CHECK RELATIONSHIP
+=========================== */
+
+async function checkRelationship() {
+
+    actionArea.innerHTML = "";
+
+    try {
+
+        /* Already Connected */
+
+        const connectionSnap = await getDoc(
+
+            doc(
+                db,
+                "users",
+                currentUser.uid,
+                "connections",
+                profileUid
+            )
+
+        );
+
+        if (connectionSnap.exists()) {
+
+            actionArea.innerHTML = `
+
+                <div class="connected">
+
+                    <i class="fa-solid fa-circle-check"></i>
+
+                    Connected
+
+                </div>
+
+                <button
+                    class="primaryBtn"
+                    id="chatBtn">
+
+                    Chat
+
+                </button>
+
+            `;
+
+            document
+                .getElementById("chatBtn")
+                .onclick = () => {
+
+                    window.location.href =
+                        "chat.html?uid=" + profileUid;
+
+                };
+
+            return;
+
+        }
+
+        /* Outgoing Request */
+
+        const outgoingQuery = query(
+
+            collection(db, "connectionRequests"),
+
+            where("fromUid", "==", currentUser.uid),
+
+            where("toUid", "==", profileUid),
+
+            where("status", "==", "pending")
+
+        );
+
+        const outgoing = await getDocs(outgoingQuery);
+
+        if (!outgoing.empty) {
+
+            actionArea.innerHTML = `
+
+                <button
+                    class="secondaryBtn"
+                    disabled>
+
+                    Request Sent
+
+                </button>
+
+            `;
+
+            return;
+
+        }
+
+        /* Incoming Request */
+
+        const incomingQuery = query(
+
+            collection(db, "connectionRequests"),
+
+            where("fromUid", "==", profileUid),
+
+            where("toUid", "==", currentUser.uid),
+
+            where("status", "==", "pending")
+
+        );
+
+        const incoming = await getDocs(incomingQuery);
+
+        if (!incoming.empty) {
+
+            const requestId = incoming.docs[0].id;
+
+            actionArea.innerHTML = `
+
+                <button
+                    class="acceptBtn"
+                    id="acceptBtn">
+
+                    Accept
+
+                </button>
+
+                <button
+                    class="rejectBtn"
+                    id="rejectBtn">
+
+                    Reject
+
+                </button>
+
+            `;
+
+            document
+                .getElementById("acceptBtn")
+                .onclick = () => {
+
+                    acceptRequest(requestId);
+
+                };
+
+            document
+                .getElementById("rejectBtn")
+                .onclick = () => {
+
+                    rejectRequest(requestId);
+
+                };
+
+            return;
+
+        }
+
+        /* No Relationship */
+
+        actionArea.innerHTML = `
+
+            <button
+                class="primaryBtn"
+                id="connectBtn">
+
+                Connect
+
+            </button>
+
+        `;
+
+        document
+            .getElementById("connectBtn")
+            .onclick = sendConnectionRequest;
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+    }
+
+                }
+/* ===========================
+   SEND CONNECTION REQUEST
+=========================== */
+
+import {
+    addDoc,
+    updateDoc,
+    deleteDoc,
+    setDoc,
+    serverTimestamp,
+    increment
+} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+async function sendConnectionRequest() {
+
+    try {
+
+        await addDoc(
+
+            collection(db, "connectionRequests"),
+
+            {
+
+                fromUid: currentUser.uid,
+
+                toUid: profileUid,
+
+                status: "pending",
+
+                createdAt: serverTimestamp()
+
+            }
+
+        );
+
+        checkRelationship();
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert("Unable to send request.");
+
+    }
+
+}
+
+/* ===========================
+   ACCEPT REQUEST
+=========================== */
+
+async function acceptRequest(requestId) {
+
+    try {
+
+        // Add connection for current user
+        await setDoc(
+
+            doc(
+                db,
+                "users",
+                currentUser.uid,
+                "connections",
+                profileUid
+            ),
+
+            {
+
+                uid: profileUid,
+
+                connectedAt: serverTimestamp()
+
+            }
+
+        );
+
+        // Add connection for other user
+        await setDoc(
+
+            doc(
+                db,
+                "users",
+                profileUid,
+                "connections",
+                currentUser.uid
+            ),
+
+            {
+
+                uid: currentUser.uid,
+
+                connectedAt: serverTimestamp()
+
+            }
+
+        );
+
+        // Update connection count
+        await updateDoc(
+
+            doc(db, "users", currentUser.uid),
+
+            {
+
+                connectionCount: increment(1)
+
+            }
+
+        );
+
+        await updateDoc(
+
+            doc(db, "users", profileUid),
+
+            {
+
+                connectionCount: increment(1)
+
+            }
+
+        );
+
+        // Remove request
+        await deleteDoc(
+
+            doc(
+                db,
+                "connectionRequests",
+                requestId
+            )
+
+        );
+
+        checkRelationship();
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        alert("Unable to accept request.");
+
+    }
+
+}
+
+/* ===========================
+   REJECT REQUEST
+=========================== */
+
+async function rejectRequest(requestId) {
+
+    try {
+
+        await deleteDoc(
+
+            doc(
+                db,
+                "connectionRequests",
+                requestId
+            )
+
+        );
+
+        checkRelationship();
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        alert("Unable to reject request.");
+
+    }
+
+}
+/* =====================================
+   REAL-TIME PROFILE & RELATIONSHIP
+===================================== */
+
+import {
+    onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+let unsubscribeProfile = null;
+let unsubscribeConnections = null;
+
+function startRealtimeListeners() {
+
+    if (!profileUid) return;
+
+    // Live profile updates
+    unsubscribeProfile = onSnapshot(
+
+        doc(db, "users", profileUid),
+
+        (snapshot) => {
+
+            if (!snapshot.exists()) return;
+
+            const user = snapshot.data();
+
+            profilePhoto.src = user.photoURL || "";
+
+            username.textContent = user.username || "Unknown User";
+
+            bio.textContent = user.bio || "No bio available.";
+
+            aboutText.textContent = user.bio || "No bio available.";
+
+            connections.textContent =
+                user.connectionCount || 0;
+
+        }
+
+    );
+
+    // Live connection status updates
+    unsubscribeConnections = onSnapshot(
+
+        collection(
+            db,
+            "connectionRequests"
+        ),
+
+        () => {
+
+            checkRelationship();
+
+        }
+
+    );
+
+}
+
+/* =====================================
+   CLEANUP
+===================================== */
+
+window.addEventListener("beforeunload", () => {
+
+    if (unsubscribeProfile) {
+
+        unsubscribeProfile();
+
+    }
+
+    if (unsubscribeConnections) {
+
+        unsubscribeConnections();
+
+    }
+
+});
+
+/* =====================================
+   INITIALIZE
+===================================== */
+
+startRealtimeListeners();
+
+/* =====================================
+   GLOBAL ERROR HANDLER
+===================================== */
+
+window.addEventListener("error", (event) => {
+
+    console.error("View Profile Error:", event.error);
+
+});
+
+console.log("RHK View Profile Ready");
