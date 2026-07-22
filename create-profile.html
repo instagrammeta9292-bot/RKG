@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Create Your RHK Profile</title>
+
+<link rel="stylesheet" href="css/profile.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="background"></div>
+
+<div class="profile-card">
+
+    <h1>RHK</h1>
+
+    <p class="subtitle">
+        Complete your profile
+    </p>
+
+    <form id="profileForm">
+
+        <div class="image-box">
+
+            <img
+            id="previewImage"
+            src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
+            alt="Profile">
+
+        </div>
+
+        <input
+        type="file"
+        id="profileImage"
+        accept="image/*"
+        required>
+
+        <input
+        type="text"
+        id="username"
+        placeholder="Choose Username"
+        maxlength="20"
+        required>
+
+        <button type="submit">
+
+            Continue
+
+        </button>
+
+        <p id="message"></p>
+
+    </form>
+
+</div>
+
+<script type="module" src="js/firebase.js"></script>
+<script type="module" src="js/create-profile.js"></script>
+
+</body>
+
+</html>
