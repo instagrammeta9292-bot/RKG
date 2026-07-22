@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
 
 <meta charset="UTF-8">
@@ -8,133 +7,205 @@
 
 <title>RHK</title>
 
-<link rel="stylesheet" href="css/style.css">
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
-
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins',sans-serif;
+}
+
+body{
+
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+background:#ffffff;
+overflow:hidden;
+
+}
+
+.container{
+
+display:flex;
+flex-direction:column;
+align-items:center;
+
+}
+
+.logo{
+
+width:120px;
+height:120px;
+border-radius:30px;
+
+background:linear-gradient(135deg,#2563eb,#1d4ed8);
+
+display:flex;
+justify-content:center;
+align-items:center;
+
+font-size:48px;
+font-weight:800;
+color:white;
+
+box-shadow:0 15px 40px rgba(37,99,235,.25);
+
+animation:pop .8s ease;
+
+}
+
+.title{
+
+margin-top:25px;
+
+font-size:40px;
+font-weight:800;
+
+letter-spacing:10px;
+
+color:#111827;
+
+}
+
+.subtitle{
+
+margin-top:8px;
+
+font-size:15px;
+
+color:#6b7280;
+
+}
+
+.loader{
+
+margin-top:45px;
+
+width:55px;
+height:55px;
+
+border-radius:50%;
+
+border:5px solid #e5e7eb;
+
+border-top:5px solid #2563eb;
+
+animation:spin 1s linear infinite;
+
+}
+
+@keyframes spin{
+
+100%{
+
+transform:rotate(360deg);
+
+}
+
+}
+
+@keyframes pop{
+
+0%{
+
+opacity:0;
+transform:scale(.6);
+
+}
+
+100%{
+
+opacity:1;
+transform:scale(1);
+
+}
+
+}
+
+</style>
 
 </head>
 
 <body>
 
-<div class="background">
+<div class="container">
 
-<div class="circle circle1"></div>
-<div class="circle circle2"></div>
-<div class="circle circle3"></div>
+<div class="logo">
+
+R
 
 </div>
 
-<div class="login-card">
-
-<div class="logo-area">
-
-<div class="logo">
+<div class="title">
 
 RHK
 
 </div>
 
-<h2>Welcome Back</h2>
+<div class="subtitle">
 
-<p>
-
-Sign in to continue chatting with your friends
-
-</p>
+Connect. Chat. Share.
 
 </div>
 
-<form id="loginForm">
-
-<div class="input-box">
-
-<i class="fa-solid fa-envelope"></i>
-
-<input
-type="email"
-id="email"
-placeholder="Email Address"
-required>
+<div class="loader"></div>
 
 </div>
 
-<div class="input-box">
+<script type="module">
 
-<i class="fa-solid fa-lock"></i>
+import { auth, db } from "./js/firebase.js";
 
-<input
-type="password"
-id="password"
-placeholder="Password"
-required>
+import {
+onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 
-<button
-type="button"
-class="eye-btn"
-id="togglePassword">
+import {
+doc,
+getDoc
+} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
-<i
-id="eyeIcon"
-class="fa-solid fa-eye"></i>
+onAuthStateChanged(auth, async(user)=>{
 
-</button>
+if(!user){
 
-</div>
+setTimeout(()=>{
 
-<button
-class="login-btn"
-type="submit">
+window.location.href="login.html";
 
-<span id="loginText">
+},1800);
 
-Login
+return;
 
-</span>
+}
 
-<div
-id="loader"
-class="loader">
+const profile=await getDoc(doc(db,"users",user.uid));
 
-</div>
+setTimeout(()=>{
 
-</button>
+if(profile.exists()){
 
-<p id="message"></p>
+window.location.href="home.html";
 
-</form>
+}else{
 
-<div class="divider">
+window.location.href="create-profile.html";
 
-<span>
+}
 
-OR
+},1800);
 
-</span>
+});
 
-</div>
-
-<button
-
-class="signup-btn"
-
-onclick="window.location.href='signup.html'">
-
-Create New Account
-
-</button>
-
-</div>
-
-<script type="module" src="js/firebase.js"></script>
-
-<script type="module" src="js/login.js"></script>
+</script>
 
 </body>
-
 </html>
