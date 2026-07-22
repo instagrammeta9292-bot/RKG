@@ -26,11 +26,15 @@ signupForm.addEventListener("submit", async (e) => {
 
     try {
 
-        await createUserWithEmailAndPassword(
-            auth,
-            email,
-            password
-        );
+        const userCredential = await createUserWithEmailAndPassword(
+    auth,
+    email,
+    password
+);
+
+if (userCredential.user) {
+    window.location.href = "create-profile.html";
+}
 
         message.style.color = "lime";
         message.textContent = "Account created successfully!";
