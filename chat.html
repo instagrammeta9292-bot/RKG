@@ -4,70 +4,100 @@
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
 
 <title>RHK Chat</title>
 
-<link rel="stylesheet" href="css/chat.css">
+<link rel="preconnect"
+href="https://fonts.googleapis.com">
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect"
+href="https://fonts.gstatic.com"
+crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+rel="stylesheet">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+<link rel="stylesheet"
+href="css/chat.css">
 
 </head>
 
 <body>
 
-<header class="chat-header">
+<header class="chatHeader">
 
-<button class="back-btn" onclick="history.back()">
-←
+<button id="backBtn">
+
+<i class="fa-solid fa-arrow-left"></i>
+
 </button>
 
+<div class="headerUser">
+
 <img
-id="chatProfile"
-class="chat-profile"
-src=""
-alt="Profile">
+id="userPhoto"
+class="headerPhoto">
 
-<div class="chat-user">
+<div>
 
-<h2 id="chatUsername">
+<h3 id="userName">
+
 Loading...
-</h2>
 
-<p id="chatStatus">
-Online
+</h3>
+
+<p id="userStatus">
+
+Offline
+
 </p>
+
+</div>
 
 </div>
 
 </header>
 
-<main
+<div
 id="messages"
 class="messages">
 
-<!-- Messages appear here -->
+</div>
 
-</main>
-
-<div class="message-box">
+<div class="messageBar">
 
 <input
 type="text"
 id="messageInput"
-placeholder="Type a message">
+placeholder="Type a message...">
 
-<button
-id="sendBtn">
+<button id="sendBtn">
 
-Send
+<i class="fa-solid fa-paper-plane"></i>
 
 </button>
 
 </div>
 
-<script type="module" src="js/firebase.js"></script>
-<script type="module" src="js/chat.js"></script>
+<script>
+
+document
+.getElementById("backBtn")
+.onclick=()=>history.back();
+
+</script>
+
+<script
+type="module"
+src="js/chat.js">
+
+</script>
 
 </body>
 
