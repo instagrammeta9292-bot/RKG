@@ -36,7 +36,7 @@ signupForm.addEventListener("submit", async (e) => {
         message.textContent = "Account created successfully!";
 
         setTimeout(() => {
-            window.location.href = "home.html";
+            window.location.href = "creat-profile.html";
         }, 1000);
 
     } catch (error) {
