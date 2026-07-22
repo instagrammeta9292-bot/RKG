@@ -1,128 +1,295 @@
 import { auth, db } from "./firebase.js";
 
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+import {
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 
 import {
     collection,
-    onSnapshot
+    query,
+    where,
+    onSnapshot,
+    doc,
+    getDoc
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
-const usersList = document.getElementById("usersList");
-const searchInput = document.getElementById("searchInput");
+const requestList = document.getElementById("requestList");
+const requestCount = document.getElementById("requestCount");
+const userList = document.getElementById("userList");
 
-let allUsers = [];
+let currentUser = null;
 
 onAuthStateChanged(auth, (user) => {
 
     if (!user) {
+
         window.location.href = "index.html";
         return;
+
     }
 
-    loadUsers(user.uid);
+    currentUser = user;
+
+    loadConnectionRequests();
+
+    loadConnectedUsers();
 
 });
 
-function loadUsers(currentUid) {
+function loadConnectionRequests() {
 
-    const usersRef = collection(db, "users");
+    const q = query(
+        collection(db, "connectionRequests"),
+        where("toUid", "==", currentUser.uid),
+        where("status", "==", "pending")
+    );
 
-    onSnapshot(usersRef, (snapshot) => {
+    onSnapshot(q, async (snapshot) => {
 
-        allUsers = [];
+        requestList.innerHTML = "";
 
-        snapshot.forEach((doc) => {
+        requestCount.textContent = snapshot.size;
 
-            const data = doc.data();
+        if (snapshot.empty) {
 
-            if (data.uid !== currentUid) {
+            requestList.innerHTML = `
+                <div class="empty-card">
+                    No connection requests
+                </div>
+            `;
 
-                allUsers.push(data);
+            return;
 
-            }
+        }
+
+        for (const request of snapshot.docs) {
+
+            const data = request.data();
+
+            const senderRef = doc(db, "users", data.fromUid);
+
+            const senderSnap = await getDoc(senderRef);
+
+            if (!senderSnap.exists()) continue;
+
+            const sender = senderSnap.data();
+
+            const card = document.createElement("div");
+
+            card.className = "request-card";
+
+            card.innerHTML = `
+                <img src="${sender.photoURL}" alt="Profile">
+
+                <div class="user-info">
+
+                    <h4>${sender.username}</h4>
+
+                    <p>Wants to connect with you</p>
+
+                    <div class="request-buttons">
+
+                        <button
+                            class="acceptBtn"
+                            data-id="${request.id}"
+                            data-uid="${data.fromUid}">
+                            Accept
+                        </button>
+
+                        <button
+                            class="rejectBtn"
+                            data-id="${request.id}">
+                            Reject
+                        </button>
+
+                    </div>
+
+                </div>
+            `;
+
+            requestList.appendChild(card);
+
+        }
+
+        document.querySelectorAll(".acceptBtn").forEach(btn => {
+
+            btn.addEventListener("click", () => {
+
+                acceptRequest(
+                    btn.dataset.id,
+                    btn.dataset.uid
+                );
+
+            });
 
         });
 
-        displayUsers(allUsers);
+        document.querySelectorAll(".rejectBtn").forEach(btn => {
+
+            btn.addEventListener("click", () => {
+
+                rejectRequest(
+                    btn.dataset.id
+                );
+
+            });
+
+        });
 
     });
 
 }
+import {
+    doc,
+    setDoc,
+    updateDoc,
+    deleteDoc,
+    increment,
+    collection,
+    onSnapshot,
+    serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
-function displayUsers(users) {
+async function acceptRequest(requestId, senderUid) {
 
-    usersList.innerHTML = "";
+    try {
 
-    if (users.length === 0) {
+        await setDoc(
+            doc(db, "users", currentUser.uid, "connections", senderUid),
+            {
+                connected: true,
+                connectedAt: serverTimestamp()
+            }
+        );
 
-        usersList.innerHTML =
-        `<div class="empty">No users found.</div>`;
+        await setDoc(
+            doc(db, "users", senderUid, "connections", currentUser.uid),
+            {
+                connected: true,
+                connectedAt: serverTimestamp()
+            }
+        );
 
-        return;
+        await updateDoc(
+            doc(db, "users", currentUser.uid),
+            {
+                connectionCount: increment(1)
+            }
+        );
+
+        await updateDoc(
+            doc(db, "users", senderUid),
+            {
+                connectionCount: increment(1)
+            }
+        );
+
+        await deleteDoc(
+            doc(db, "connectionRequests", requestId)
+        );
+
+    } catch (error) {
+
+        console.error(error);
+        alert("Unable to accept request.");
+
     }
 
-    users.forEach((user) => {
+}
 
-        usersList.innerHTML += `
+async function rejectRequest(requestId) {
 
-<div class="user-card" onclick="openChat('${user.uid}')">
+    try {
 
-<img
-class="avatar"
-src="${user.photoURL}"
-alt="Profile">
+        await deleteDoc(
+            doc(db, "connectionRequests", requestId)
+        );
 
-<div class="user-info">
+    } catch (error) {
 
-<div class="user-name">
-${user.username}
-</div>
+        console.error(error);
+        alert("Unable to reject request.");
 
-<div class="last-message">
-Tap to start chatting
-</div>
+    }
 
-</div>
+}
 
-<div>
+function loadConnectedUsers() {
 
-<div class="time">
-Online
-</div>
+    const connectionsRef = collection(
+        db,
+        "users",
+        currentUser.uid,
+        "connections"
+    );
 
-<div class="online"></div>
+    onSnapshot(connectionsRef, async (snapshot) => {
 
-</div>
+        userList.innerHTML = "";
 
-</div>
+        if (snapshot.empty) {
 
-`;
+            userList.innerHTML = `
+                <div class="empty-card">
+                    No connected users yet
+                </div>
+            `;
+
+            return;
+
+        }
+
+        for (const connection of snapshot.docs) {
+
+            const otherUid = connection.id;
+
+            const userSnap = await getDoc(
+                doc(db, "users", otherUid)
+            );
+
+            if (!userSnap.exists()) continue;
+
+            const user = userSnap.data();
+
+            const card = document.createElement("div");
+
+            card.className = "user-card";
+
+            card.innerHTML = `
+                <img src="${user.photoURL}" alt="Profile">
+
+                <div class="user-info">
+
+                    <h4>${user.username}</h4>
+
+                    <p>${user.bio || "No bio available"}</p>
+
+                </div>
+
+                <button class="chatBtn">
+                    Chat
+                </button>
+            `;
+
+            card.querySelector("img").onclick = () => {
+                window.location.href =
+                    "view-profile.html?uid=" + otherUid;
+            };
+
+            card.querySelector(".user-info").onclick = () => {
+                window.location.href =
+                    "view-profile.html?uid=" + otherUid;
+            };
+
+            card.querySelector(".chatBtn").onclick = () => {
+                window.location.href =
+                    "chat.html?uid=" + otherUid;
+            };
+
+            userList.appendChild(card);
+
+        }
 
     });
 
 }
-
-searchInput.addEventListener("input", () => {
-
-    const value = searchInput.value
-    .toLowerCase()
-    .trim();
-
-    const filtered = allUsers.filter((user) =>
-
-        user.username
-        .toLowerCase()
-        .includes(value)
-
-    );
-
-    displayUsers(filtered);
-
-});
-
-window.openChat = function(uid){
-
-    window.location.href =
-    `chat.html?uid=${uid}`;
-
-};
