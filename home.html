@@ -6,11 +6,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>RHK Chat</title>
+<title>RHK</title>
 
 <link rel="stylesheet" href="css/home.css">
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 
 </head>
 
@@ -18,31 +24,78 @@
 
 <header class="topbar">
 
-    <h1 class="logo">
-        RHK
-    </h1>
+<div class="logo">
+
+RHK
+
+</div>
+
+<div class="top-icons">
+
+<button id="searchBtn">
+
+<i class="fa-solid fa-magnifying-glass"></i>
+
+</button>
+
+</div>
 
 </header>
 
-<div class="search-box">
+<main>
 
-    <input
-        type="text"
-        id="searchInput"
-        placeholder="Search users">
+<section class="request-section">
+
+<div class="section-title">
+
+<h3>
+
+Connection Requests
+
+</h3>
+
+<span id="requestCount">
+
+0
+
+</span>
 
 </div>
 
-<div
-class="users-list"
-id="usersList">
+<div id="requestList">
 
-<!-- Real-time users will appear here -->
+<!-- Requests appear here -->
 
 </div>
+
+</section>
+
+<section class="chat-section">
+
+<div class="section-title">
+
+<h3>
+
+Connected People
+
+</h3>
+
+</div>
+
+<div id="userList">
+
+<!-- Connected users appear here -->
+
+</div>
+
+</section>
+
+</main>
+
+<div class="bottom-space"></div>
 
 <script type="module" src="js/firebase.js"></script>
-<script type="module" src="js/auth.js"></script>
+
 <script type="module" src="js/home.js"></script>
 
 </body>
