@@ -1,55 +1,85 @@
 import { auth, db } from "./firebase.js";
 
 import {
-    signInWithEmailAndPassword
+  signInWithEmailAndPassword
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 
 import {
-    doc,
-    getDoc
+  doc,
+  getDoc
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
 const loginForm = document.getElementById("loginForm");
+const email = document.getElementById("email");
+const password = document.getElementById("password");
+
 const message = document.getElementById("message");
+
+const loader = document.getElementById("loader");
+const loginText = document.getElementById("loginText");
+
+const togglePassword = document.getElementById("togglePassword");
+const eyeIcon = document.getElementById("eyeIcon");
+
+// Show / Hide Password
+
+togglePassword.addEventListener("click", () => {
+
+    if (password.type === "password") {
+
+        password.type = "text";
+
+        eyeIcon.classList.remove("fa-eye");
+        eyeIcon.classList.add("fa-eye-slash");
+
+    } else {
+
+        password.type = "password";
+
+        eyeIcon.classList.remove("fa-eye-slash");
+        eyeIcon.classList.add("fa-eye");
+
+    }
+
+});
+
+// Login
 
 loginForm.addEventListener("submit", async (e) => {
 
     e.preventDefault();
 
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value;
-
+    message.textContent = "";
     message.style.color = "#FFD54F";
-    message.textContent = "Signing in...";
+
+    loader.style.display = "block";
+    loginText.style.display = "none";
 
     try {
 
-        // Login with Firebase Authentication
         const userCredential = await signInWithEmailAndPassword(
             auth,
-            email,
-            password
+            email.value.trim(),
+            password.value
         );
 
         const user = userCredential.user;
 
-        // Check if profile exists in Firestore
-        const userRef = doc(db, "users", user.uid);
-        const userSnap = await getDoc(userRef);
+        const profileRef = doc(db, "users", user.uid);
 
-        message.style.color = "#4CAF50";
-        message.textContent = "Login successful";
+        const profileSnap = await getDoc(profileRef);
+
+        message.style.color = "#7CFC8A";
+        message.textContent = "Login Successful";
 
         setTimeout(() => {
 
-            if (userSnap.exists()) {
+            if (profileSnap.exists()) {
 
-                // Existing user
                 window.location.href = "home.html";
 
             } else {
 
-                // New user
                 window.location.href = "create-profile.html";
 
             }
@@ -58,36 +88,47 @@ loginForm.addEventListener("submit", async (e) => {
 
     } catch (error) {
 
-        let errorMessage = "Login failed.";
+        loader.style.display = "none";
+        loginText.style.display = "inline";
 
         switch (error.code) {
 
             case "auth/invalid-email":
-                errorMessage = "Invalid email address.";
+                message.textContent = "Invalid email address.";
                 break;
 
             case "auth/invalid-credential":
-                errorMessage = "Incorrect email or password.";
+                message.textContent = "Incorrect email or password.";
                 break;
 
             case "auth/user-disabled":
-                errorMessage = "This account has been disabled.";
+                message.textContent = "This account is disabled.";
                 break;
 
             case "auth/network-request-failed":
-                errorMessage = "Check your internet connection.";
+                message.textContent = "No internet connection.";
                 break;
 
             case "auth/too-many-requests":
-                errorMessage = "Too many attempts. Try again later.";
+                message.textContent = "Too many attempts. Try again later.";
                 break;
 
             default:
-                errorMessage = error.message;
+                message.textContent = error.message;
+
         }
 
-        message.style.color = "#ff4d4d";
-        message.textContent = errorMessage;
+        message.style.color = "#ff6b6b";
+
+        return;
+
     }
+
+});
+
+window.addEventListener("pageshow", () => {
+
+    loader.style.display = "none";
+    loginText.style.display = "inline";
 
 });
