@@ -35,9 +35,12 @@ signupForm.addEventListener("submit", async (e) => {
         message.style.color = "lime";
         message.textContent = "Account created successfully!";
 
-        setTimeout(() => {
-            window.location.href = "creat-profile.html";
-        }, 1000);
+      
+            await createUserWithEmailAndPassword(auth, email, password);
+
+setTimeout(() => {
+    window.location.replace("create-profile.html");
+}, 500);
 
     } catch (error) {
 
