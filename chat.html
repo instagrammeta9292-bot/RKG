@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>RHK Chat</title>
+
+<link rel="stylesheet" href="css/chat.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+
+<header class="chat-header">
+
+<button class="back-btn" onclick="history.back()">
+←
+</button>
+
+<img
+id="chatProfile"
+class="chat-profile"
+src=""
+alt="Profile">
+
+<div class="chat-user">
+
+<h2 id="chatUsername">
+Loading...
+</h2>
+
+<p id="chatStatus">
+Online
+</p>
+
+</div>
+
+</header>
+
+<main
+id="messages"
+class="messages">
+
+<!-- Messages appear here -->
+
+</main>
+
+<div class="message-box">
+
+<input
+type="text"
+id="messageInput"
+placeholder="Type a message">
+
+<button
+id="sendBtn">
+
+Send
+
+</button>
+
+</div>
+
+<script type="module" src="js/firebase.js"></script>
+<script type="module" src="js/chat.js"></script>
+
+</body>
+
+</html>
