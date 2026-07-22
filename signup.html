@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up • RHK</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="auth-box">
+            <h1 class="logo-text">RHK</h1>
+            
+            <form id="signupForm">
+                <div class="input-field">
+                    <input type="email" id="signupEmail" required placeholder=" ">
+                    <label>Email address</label>
+                </div>
+                <div class="input-field">
+                    <input type="password" id="signupPassword" required placeholder=" ">
+                    <label>Password (6+ chars)</label>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Create Account</button>
+            </form>
+            
+            <p id="status-message"></p>
+
+            <div class="switch-page">
+                <p>Already have an account? <a href="index.html">Sign In</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK (Compat Version) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js"></script>
+    <script src="signup.js"></script>
+</body>
+</html>
+
