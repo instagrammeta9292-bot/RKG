@@ -1,8 +1,7 @@
-// Import Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
-// Your Firebase Configuration
 const firebaseConfig = {
   apiKey: "AIzaSyDkRNwlOqQM-MElq7QdUhciNa1U3VWxAn0",
   authDomain: "rhk14-a56ce.firebaseapp.com",
@@ -13,11 +12,9 @@ const firebaseConfig = {
   measurementId: "G-HXQFX1WTF6"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Initialize Authentication
 const auth = getAuth(app);
+const db = getFirestore(app);
 
-// Export Authentication
-export { auth };
+export { auth, db };
