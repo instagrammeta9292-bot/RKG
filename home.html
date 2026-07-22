@@ -4,11 +4,9 @@
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
 <title>RHK</title>
-
-<link rel="stylesheet" href="css/home.css">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 
@@ -16,13 +14,16 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+<link rel="stylesheet" href="css/home.css">
 
 </head>
 
 <body>
 
-<header class="topbar">
+<header>
 
 <div class="logo">
 
@@ -30,7 +31,7 @@ RHK
 
 </div>
 
-<div class="top-icons">
+<div class="headerIcons">
 
 <button id="searchBtn">
 
@@ -38,15 +39,28 @@ RHK
 
 </button>
 
+<button id="profileBtn">
+
+<i class="fa-solid fa-user"></i>
+
+</button>
+
 </div>
 
 </header>
 
-<main>
+<div class="searchArea">
 
-<section class="request-section">
+<input
+type="text"
+id="searchInput"
+placeholder="Search users...">
 
-<div class="section-title">
+</div>
+
+<div class="section">
+
+<div class="sectionHeader">
 
 <h3>
 
@@ -64,37 +78,27 @@ Connection Requests
 
 <div id="requestList">
 
-<!-- Requests appear here -->
+</div>
 
 </div>
 
-</section>
+<div class="section">
 
-<section class="chat-section">
-
-<div class="section-title">
+<div class="sectionHeader">
 
 <h3>
 
-Connected People
+Chats
 
 </h3>
 
 </div>
 
-<div id="userList">
-
-<!-- Connected users appear here -->
+<div id="chatList">
 
 </div>
 
-</section>
-
-</main>
-
-<div class="bottom-space"></div>
-
-<script type="module" src="js/firebase.js"></script>
+</div>
 
 <script type="module" src="js/home.js"></script>
 
