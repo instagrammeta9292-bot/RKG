@@ -28,13 +28,16 @@ signupForm.addEventListener('submit', (e) => {
     const email = emailInput.value.trim();
     const password = passwordInput.value;
 
+    statusMessage.textContent = "Creating account...";
+    statusMessage.className = "";
+
     auth.createUserWithEmailAndPassword(email, password)
         .then(() => {
             window.location.href = "dashboard.html";
         })
         .catch((error) => {
+            console.error("Signup Error Code:", error.code);
             statusMessage.textContent = error.message;
             statusMessage.className = "error-msg";
         });
 });
-
