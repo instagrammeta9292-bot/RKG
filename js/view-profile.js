@@ -61,6 +61,8 @@ async function loadProfile() {
         }
 
         viewedUser = snap.data();
+        console.log("Current User UID:", currentUser.uid);
+console.log("Profile UID:", profileUid);
 
         profilePhoto.src = viewedUser.photoURL || "";
 
@@ -486,7 +488,29 @@ import {
 let unsubscribeProfile = null;
 let unsubscribeConnections = null;
 
-function startRealtimeListeners() {
+function onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+
+        window.location.replace("login.html");
+        return;
+
+    }
+
+    currentUser = user;
+
+    if (!profileUid) {
+
+        username.textContent = "User not found";
+        return;
+
+    }
+
+    await loadProfile();
+
+    startRealtimeListeners();
+
+}); {
 
     if (!profileUid) return;
 
