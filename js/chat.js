@@ -6,141 +6,306 @@ import {
 
 import {
     doc,
-    getDoc,
-    collection,
-    query,
-    orderBy,
-    onSnapshot
+    getDoc
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+/* ===========================
+   DOM
+=========================== */
+
+const userPhoto = document.getElementById("userPhoto");
+const userName = document.getElementById("userName");
+const userStatus = document.getElementById("userStatus");
+
+const messages = document.getElementById("messages");
+
+const messageInput = document.getElementById("messageInput");
+
+const sendBtn = document.getElementById("sendBtn");
+
+/* ===========================
+   URL
+=========================== */
 
 const params = new URLSearchParams(window.location.search);
 
 const otherUid = params.get("uid");
 
-const chatProfile = document.getElementById("chatProfile");
-const chatUsername = document.getElementById("chatUsername");
-const chatStatus = document.getElementById("chatStatus");
-
-const messages = document.getElementById("messages");
-
-const messageInput = document.getElementById("messageInput");
-const sendBtn = document.getElementById("sendBtn");
+/* ===========================
+   VARIABLES
+=========================== */
 
 let currentUser = null;
 
+let currentUserData = null;
+
+let otherUserData = null;
+
 let chatId = "";
 
-onAuthStateChanged(auth, async (user)=>{
+/* ===========================
+   AUTH
+=========================== */
 
-    if(!user){
+onAuthStateChanged(auth, async (user) => {
 
-        window.location.href="index.html";
+    if (!user) {
+
+        window.location.replace("login.html");
+
         return;
 
     }
 
-    currentUser=user;
+    currentUser = user;
 
-    if(user.uid < otherUid){
+    if (!otherUid) {
 
-        chatId=user.uid+"_"+otherUid;
+        alert("User not found");
 
-    }else{
+        window.location.href = "home.html";
 
-        chatId=otherUid+"_"+user.uid;
-
-    }
-
-    const otherUserRef=doc(db,"users",otherUid);
-
-    const otherSnap=await getDoc(otherUserRef);
-
-    if(otherSnap.exists()){
-
-        const data=otherSnap.data();
-
-        chatProfile.src=data.photoURL;
-        chatUsername.textContent=data.username;
-
-        chatStatus.textContent="Online";
+        return;
 
     }
 
-    loadMessages();
+    createChatId();
+
+    await loadCurrentUser();
+
+    await loadOtherUser();
 
 });
 
-function loadMessages(){
+/* ===========================
+   CHAT ID
+=========================== */
 
-    const messagesRef=collection(
-        db,
-        "chats",
-        chatId,
-        "messages"
+function createChatId() {
+
+    chatId =
+
+        [currentUser.uid, otherUid]
+
+        .sort()
+
+        .join("_");
+
+}
+
+/* ===========================
+   CURRENT USER
+=========================== */
+
+async function loadCurrentUser() {
+
+    const snap = await getDoc(
+
+        doc(db, "users", currentUser.uid)
+
     );
 
-    const q=query(
-        messagesRef,
-        orderBy("timestamp","asc")
+    if (snap.exists()) {
+
+        currentUserData = snap.data();
+
+    }
+
+}
+
+/* ===========================
+   OTHER USER
+=========================== */
+
+async function loadOtherUser() {
+
+    const snap = await getDoc(
+
+        doc(db, "users", otherUid)
+
     );
 
-    onSnapshot(q,(snapshot)=>{
+    if (!snap.exists()) {
 
-        messages.innerHTML="";
+        alert("User does not exist.");
 
-        snapshot.forEach((doc)=>{
+        window.location.href = "home.html";
 
-            const msg=doc.data();
+        return;
 
-            const bubble=document.createElement("div");
+    }
 
-            bubble.className=
-            msg.sender===currentUser.uid
-            ?"message sent"
-            :"message received";
+    otherUserData = snap.data();
 
-            bubble.innerHTML=`
-                ${msg.text}
-                <div class="time">
-                    ${formatTime(msg.timestamp)}
-                </div>
-            `;
+    userPhoto.src = otherUserData.photoURL;
 
-            messages.appendChild(bubble);
+    userName.textContent = otherUserData.username;
 
-        });
+    userStatus.textContent =
 
-        messages.scrollTop=messages.scrollHeight;
+        otherUserData.isOnline
+
+        ? "Online"
+
+        : "Offline";
+
+    userStatus.className =
+
+        otherUserData.isOnline
+
+        ? "online"
+
+        : "offline";
+
+    initializeChat();
+
+}
+
+/* ===========================
+   INITIALIZE
+=========================== */
+
+function initializeChat() {
+
+    messages.innerHTML = `
+
+    <div class="emptyChat">
+
+    Loading messages...
+
+    </div>
+
+    `;
+
+}
+collection,
+query,
+orderBy,
+onSnapshot
+/* ===========================
+   RENDER MESSAGE
+=========================== */
+
+function renderMessage(message) {
+
+    const bubble = document.createElement("div");
+
+    const mine = message.senderId === currentUser.uid;
+
+    bubble.className = mine
+        ? "myMessage"
+        : "otherMessage";
+
+    const time = formatTime(message.createdAt);
+
+    bubble.innerHTML = `
+
+        <div class="messageText">
+
+            ${escapeHtml(message.text)}
+
+        </div>
+
+        <span class="messageTime">
+
+            ${time}
+
+        </span>
+
+    `;
+
+    messages.appendChild(bubble);
+
+}
+
+/* ===========================
+   FORMAT TIME
+=========================== */
+
+function formatTime(timestamp) {
+
+    if (!timestamp) return "";
+
+    let date;
+
+    if (timestamp.toDate) {
+
+        date = timestamp.toDate();
+
+    } else {
+
+        date = new Date(timestamp);
+
+    }
+
+    return date.toLocaleTimeString([], {
+
+        hour: "2-digit",
+
+        minute: "2-digit"
 
     });
 
 }
 
-function formatTime(timestamp){
+/* ===========================
+   AUTO SCROLL
+=========================== */
 
-    if(!timestamp) return "";
+function scrollToBottom() {
 
-    const date=timestamp.toDate();
+    requestAnimationFrame(() => {
 
-    return date.toLocaleTimeString([],{
-        hour:"2-digit",
-        minute:"2-digit"
+        messages.scrollTop = messages.scrollHeight;
+
     });
 
 }
-import {
-    addDoc,
-    serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+/* ===========================
+   ESCAPE HTML
+=========================== */
+
+function escapeHtml(text) {
+
+    if (!text) return "";
+
+    const div = document.createElement("div");
+
+    div.textContent = text;
+
+    return div.innerHTML;
+
+}
+/* ===========================
+   SEND MESSAGE
+=========================== */
+
+sendBtn.addEventListener("click", sendMessage);
+
+messageInput.addEventListener("keydown", (event) => {
+
+    if (event.key === "Enter") {
+
+        event.preventDefault();
+
+        sendMessage();
+
+    }
+
+});
 
 async function sendMessage() {
 
     const text = messageInput.value.trim();
 
-    if (!text || !currentUser) return;
+    if (!text) return;
+
+    sendBtn.disabled = true;
 
     try {
 
+        // Save message
         await addDoc(
 
             collection(
@@ -151,35 +316,86 @@ async function sendMessage() {
             ),
 
             {
+
+                senderId: currentUser.uid,
+
+                receiverId: otherUid,
+
                 text: text,
-                sender: currentUser.uid,
-                receiver: otherUid,
-                timestamp: serverTimestamp()
+
+                createdAt: serverTimestamp()
+
+            }
+
+        );
+
+        // Update chat information
+        await setDoc(
+
+            doc(
+                db,
+                "chats",
+                chatId
+            ),
+
+            {
+
+                users: [
+
+                    currentUser.uid,
+
+                    otherUid
+
+                ],
+
+                lastMessage: text,
+
+                lastMessageTime: serverTimestamp()
+
+            },
+
+            {
+
+                merge: true
+
             }
 
         );
 
         messageInput.value = "";
+
         messageInput.focus();
 
-    } catch (error) {
+    }
+
+    catch (error) {
 
         console.error(error);
+
         alert("Unable to send message.");
 
     }
 
+    sendBtn.disabled = false;
+
 }
 
-sendBtn.addEventListener("click", sendMessage);
+/* ===========================
+   CLEANUP
+=========================== */
 
-messageInput.addEventListener("keypress", (e) => {
+window.addEventListener("beforeunload", () => {
 
-    if (e.key === "Enter") {
+    if (unsubscribeMessages) {
 
-        e.preventDefault();
-        sendMessage();
+        unsubscribeMessages();
 
     }
 
 });
+
+/* ===========================
+   CHAT READY
+=========================== */
+
+console.log("RHK Chat Ready");
