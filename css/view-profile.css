@@ -1,174 +1,449 @@
+/* ===================================
+   RHK Premium View Profile
+=================================== */
+
 *{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:'Poppins',sans-serif;
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins',sans-serif;
+}
+
+:root{
+
+--primary:#2563EB;
+--primaryDark:#1D4ED8;
+--background:#F8FAFC;
+--card:#FFFFFF;
+--text:#111827;
+--light:#6B7280;
+--border:#E5E7EB;
+--green:#22C55E;
+--red:#EF4444;
+
 }
 
 body{
-    background:linear-gradient(135deg,#0f172a,#1d4ed8,#3b82f6);
-    min-height:100vh;
-    color:white;
+
+background:var(--background);
+
+color:var(--text);
+
+min-height:100vh;
+
 }
 
-.topbar{
-    position:sticky;
-    top:0;
-    height:70px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:rgba(15,23,42,.75);
-    backdrop-filter:blur(18px);
-    border-bottom:1px solid rgba(255,255,255,.1);
+/* =========================
+   TOP BAR
+========================= */
+
+.topBar{
+
+position:sticky;
+
+top:0;
+
+background:white;
+
+height:70px;
+
+display:flex;
+
+align-items:center;
+
+justify-content:space-between;
+
+padding:0 18px;
+
+border-bottom:1px solid var(--border);
+
+z-index:1000;
+
 }
 
-.backBtn{
-    position:absolute;
-    left:18px;
-    width:42px;
-    height:42px;
-    border:none;
-    border-radius:50%;
-    background:rgba(255,255,255,.12);
-    color:white;
-    font-size:22px;
-    cursor:pointer;
+.topBar h2{
+
+font-size:22px;
+
+font-weight:700;
+
 }
 
-.topbar h2{
-    letter-spacing:3px;
-    font-size:28px;
+.topBar button{
+
+width:44px;
+
+height:44px;
+
+border:none;
+
+border-radius:50%;
+
+background:#EEF2FF;
+
+color:var(--primary);
+
+font-size:18px;
+
+cursor:pointer;
+
+transition:.25s;
+
 }
 
-.profile-container{
-    width:92%;
-    max-width:420px;
-    margin:30px auto;
-    padding:30px 25px;
-    background:rgba(255,255,255,.10);
-    backdrop-filter:blur(22px);
-    border-radius:28px;
-    border:1px solid rgba(255,255,255,.15);
-    text-align:center;
-    box-shadow:0 20px 45px rgba(0,0,0,.25);
+.topBar button:hover{
+
+background:#DBEAFE;
+
 }
 
-.profile-photo{
-    width:140px;
-    height:140px;
-    border-radius:50%;
-    object-fit:cover;
-    border:4px solid white;
-    box-shadow:0 12px 35px rgba(0,0,0,.3);
+/* =========================
+   CONTAINER
+========================= */
+
+.profileContainer{
+
+padding:20px;
+
+max-width:600px;
+
+margin:auto;
+
 }
 
-#username{
-    margin-top:18px;
-    font-size:28px;
-    font-weight:700;
+/* =========================
+   PROFILE CARD
+========================= */
+
+.profileCard{
+
+background:white;
+
+border-radius:24px;
+
+padding:30px;
+
+text-align:center;
+
+box-shadow:0 10px 25px rgba(0,0,0,.05);
+
+border:1px solid var(--border);
+
 }
 
-#bio{
-    margin-top:10px;
-    color:#dbeafe;
-    font-size:15px;
-    line-height:1.5;
-    min-height:45px;
+.profilePhoto{
+
+width:140px;
+
+height:140px;
+
+border-radius:50%;
+
+object-fit:cover;
+
+border:5px solid #DBEAFE;
+
+background:#EEF2FF;
+
 }
+
+.profileCard h2{
+
+margin-top:18px;
+
+font-size:28px;
+
+font-weight:700;
+
+}
+
+.profileCard p{
+
+margin-top:8px;
+
+color:var(--light);
+
+line-height:1.6;
+
+}
+
+/* =========================
+   STATS
+========================= */
 
 .stats{
-    margin-top:28px;
-    display:flex;
-    justify-content:center;
+
+display:flex;
+
+justify-content:center;
+
+margin-top:30px;
+
+gap:50px;
+
 }
 
 .stats div{
-    width:140px;
-    padding:18px;
-    border-radius:18px;
-    background:rgba(255,255,255,.08);
+
+text-align:center;
+
 }
 
 .stats h3{
-    font-size:30px;
+
+font-size:24px;
+
+font-weight:700;
+
+color:var(--primary);
+
 }
 
 .stats span{
-    color:#dbeafe;
-    font-size:14px;
+
+font-size:14px;
+
+color:var(--light);
+
 }
 
-#buttonArea{
-    margin-top:30px;
+/* =========================
+   BUTTONS
+========================= */
+
+#actionArea{
+
+margin-top:30px;
+
+display:flex;
+
+justify-content:center;
+
+gap:12px;
+
+flex-wrap:wrap;
+
 }
 
-.connectBtn,
-.connectedBtn,
-.requestedBtn,
+.primaryBtn{
+
+background:var(--primary);
+
+color:white;
+
+border:none;
+
+padding:14px 28px;
+
+border-radius:14px;
+
+font-size:16px;
+
+font-weight:600;
+
+cursor:pointer;
+
+transition:.25s;
+
+}
+
+.primaryBtn:hover{
+
+background:var(--primaryDark);
+
+transform:translateY(-2px);
+
+}
+
+.secondaryBtn{
+
+background:white;
+
+color:var(--primary);
+
+border:2px solid var(--primary);
+
+padding:14px 28px;
+
+border-radius:14px;
+
+font-size:16px;
+
+font-weight:600;
+
+cursor:pointer;
+
+transition:.25s;
+
+}
+
+.secondaryBtn:hover{
+
+background:var(--primary);
+
+color:white;
+
+}
+
+/* =========================
+   STATUS BUTTONS
+========================= */
+
+.acceptBtn{
+
+background:var(--green);
+
+color:white;
+
+border:none;
+
+padding:14px 22px;
+
+border-radius:14px;
+
+cursor:pointer;
+
+font-weight:600;
+
+}
+
+.rejectBtn{
+
+background:var(--red);
+
+color:white;
+
+border:none;
+
+padding:14px 22px;
+
+border-radius:14px;
+
+cursor:pointer;
+
+font-weight:600;
+
+}
+
+.connected{
+
+background:#DCFCE7;
+
+color:#166534;
+
+padding:12px 20px;
+
+border-radius:14px;
+
+font-weight:600;
+
+display:inline-flex;
+
+align-items:center;
+
+gap:8px;
+
+}
+
+/* =========================
+   INFO CARD
+========================= */
+
+.infoCard{
+
+margin-top:22px;
+
+background:white;
+
+border-radius:22px;
+
+padding:22px;
+
+border:1px solid var(--border);
+
+box-shadow:0 10px 20px rgba(0,0,0,.04);
+
+}
+
+.infoCard h3{
+
+font-size:20px;
+
+margin-bottom:12px;
+
+font-weight:700;
+
+}
+
+.infoCard p{
+
+color:var(--light);
+
+line-height:1.8;
+
+word-break:break-word;
+
+}
+
+/* =========================
+   LOADING
+========================= */
+
+.loading{
+
+text-align:center;
+
+padding:40px;
+
+color:var(--light);
+
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:600px){
+
+.profileContainer{
+
+padding:15px;
+
+}
+
+.profileCard{
+
+padding:24px;
+
+}
+
+.profilePhoto{
+
+width:120px;
+
+height:120px;
+
+}
+
+.profileCard h2{
+
+font-size:24px;
+
+}
+
+.stats{
+
+gap:35px;
+
+}
+
+.primaryBtn,
+.secondaryBtn,
 .acceptBtn,
 .rejectBtn{
 
-    width:100%;
-    height:54px;
-    border:none;
-    border-radius:16px;
-    font-size:16px;
-    font-weight:600;
-    cursor:pointer;
-    transition:.25s;
-}
+width:100%;
 
-.connectBtn{
-    background:#ffffff;
-    color:#2563eb;
-}
-
-.connectBtn:hover{
-    transform:translateY(-2px);
-}
-
-.connectedBtn{
-    background:#16a34a;
-    color:white;
-}
-
-.requestedBtn{
-    background:#f59e0b;
-    color:white;
-}
-
-.acceptBtn{
-    background:#2563eb;
-    color:white;
-    margin-bottom:12px;
-}
-
-.rejectBtn{
-    background:#ef4444;
-    color:white;
-}
-
-.acceptBtn:hover,
-.rejectBtn:hover,
-.connectedBtn:hover,
-.requestedBtn:hover{
-    opacity:.92;
-}
-
-@media(max-width:480px){
-
-.profile-container{
-    padding:25px 20px;
-}
-
-.profile-photo{
-    width:120px;
-    height:120px;
-}
-
-#username{
-    font-size:24px;
 }
 
 }
